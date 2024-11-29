@@ -1,7 +1,8 @@
 #include <iostream>
 #include "MacUILib.h"
 #include "objPos.h"
-
+#include "GameMechs.h"
+#include "Player.h"
 using namespace std;
 
 #define DELAY_CONST 100000
@@ -17,7 +18,11 @@ void CleanUp(void);
 
 void GenerateItems(objPos* itemBin, const int listSize, const int xRange, const int yRange);
 
-//struct objPos charInfo = {9,4,'@'};
+
+Player* player;
+char input; //user input
+GameMechs* gameMechs = new GameMechs();
+
 objPos itemBin[5];
 
 int main(void)
@@ -42,6 +47,8 @@ void Initialize(void)
 {
     MacUILib_init();
     MacUILib_clearScreen();
+ 
+    player = new Player(gameMechs);
 
     for (int j = 0; j < 5; j++) {
         itemBin[j].pos->x = j - 50;
@@ -49,17 +56,24 @@ void Initialize(void)
         itemBin[j].symbol = 'A' + j;
     }
 
-    GenerateItems(itemBin, 5, 20, 10); 
+    GenerateItems(itemBin, 5, gameMechs->getBoardSizeX(), gameMechs->getBoardSizeY()); 
     exitFlag = false;
 }
 
 void GetInput(void)
 {
-   
+    if(MacUILib_hasChar()==1)
+    {
+        char input = MacUILib_getChar();
+        gameMechs->setInput(input);
+    } 
 }
 
 void RunLogic(void)
 {
+    player->updatePlayerDir();
+    player->movePlayer();
+    input = '\0';
     
 }
 
@@ -70,14 +84,21 @@ void DrawScreen(void)
      //draw board
     int i,j;
 
+    objPos playerPos = player->getPlayerPos();
+    //MacUILib_printf("Player Pos: (%d, %d) Symbol: %c\n", playerPos.pos->x, playerPos.pos->y, playerPos.symbol);
+    //MacUILib_printf("\n");
 
     //loop through each row
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < gameMechs->getBoardSizeY(); i++) {
         //loop through each column
-        for (j = 0; j < 20; j++) {
+        for (j = 0; j < gameMechs->getBoardSizeX(); j++) {
             //check if we are at the border
-            if (i == 0 || i == 9 || j == 0 || j == 19) {
+            if (i == 0 || i == gameMechs->getBoardSizeY() - 1 || j == 0 || j == gameMechs->getBoardSizeX() - 1) {
                 MacUILib_printf("%c", '#');
+            } 
+            //check if we are at the players position
+            else if (i == playerPos.pos->y && j == playerPos.pos->x) {
+                MacUILib_printf("%c", playerPos.symbol); //print player char
             } 
 
             else
@@ -106,13 +127,15 @@ void DrawScreen(void)
 
 void LoopDelay(void)
 {
-    MacUILib_Delay(10000000); // 0.1s delay
+    MacUILib_Delay(DELAY_CONST); // 0.1s delay
 }
 
 
 void CleanUp(void)
 {
-    MacUILib_clearScreen();    
+    MacUILib_clearScreen();   
+    delete player;
+    player = nullptr; 
 
     MacUILib_uninit();
 }
@@ -122,6 +145,8 @@ void CleanUp(void)
 ////////////////////////////////////
 void GenerateItems(objPos* itemBin, const int listSize, const int xRange, const int yRange)
 {
+
+    objPos playerPos = player->getPlayerPos();
 
     int usedCharacters[5];
     for (int k = 0; k < 5; k++) {
@@ -150,10 +175,10 @@ void GenerateItems(objPos* itemBin, const int listSize, const int xRange, const 
             x = (rand() % (xRange - 2)) + 1; 
             y = (rand() % (yRange - 2)) + 1; 
 
-            // //check and skip if overlap
-            // if (x == player.x && y == player.y) {
-            //     continue; 
-            // }
+            //check and skip if overlap
+            if (x == playerPos.pos->x && y == playerPos.pos->y) {
+                continue; 
+            }
 
             //check if theres already an item 
             int positionOccupied = 0;
