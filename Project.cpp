@@ -3,11 +3,16 @@
 #include "objPos.h"
 #include "GameMechs.h"
 #include "Player.h"
+#include "time.h"
+
 using namespace std;
 
 #define DELAY_CONST 100000
 
 bool exitFlag;
+const int width = 30;
+const int height = 15; 
+const int num_obj = 5; 
 
 void Initialize(void);
 void GetInput(void);
@@ -47,7 +52,8 @@ void Initialize(void)
 {
     MacUILib_init();
     MacUILib_clearScreen();
- 
+
+    gameMechs = new GameMechs(width, height);
     player = new Player(gameMechs);
 
     for (int j = 0; j < 5; j++) {
@@ -134,8 +140,25 @@ void LoopDelay(void)
 void CleanUp(void)
 {
     MacUILib_clearScreen();   
-    delete player;
-    player = nullptr; 
+
+    if (gameMechs->getLoseFlagStatus())
+    {
+        MacUILib_printf("You lost! Try again!");
+    } else {
+        MacUILib_printf("You tried! Your score is: %d\n", gameMechs->getScore());
+    }
+
+    if (gameMechs)
+    {
+        delete gameMechs;
+        gameMechs = nullptr;
+    }
+
+    if (player) 
+    {
+        delete player;
+        player = nullptr; 
+    }
 
     MacUILib_uninit();
 }
