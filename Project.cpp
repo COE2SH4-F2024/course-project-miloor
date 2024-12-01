@@ -90,9 +90,10 @@ void DrawScreen(void)
      //draw board
     int i,j;
 
-    objPos playerPos = player->getPlayerPos();
+    objPosArrayList* playerPos = player->getPlayerPos();
     //MacUILib_printf("Player Pos: (%d, %d) Symbol: %c\n", playerPos.pos->x, playerPos.pos->y, playerPos.symbol);
     //MacUILib_printf("\n");
+
 
     //loop through each row
     for (i = 0; i < gameMechs->getBoardSizeY(); i++) {
@@ -102,29 +103,43 @@ void DrawScreen(void)
             if (i == 0 || i == gameMechs->getBoardSizeY() - 1 || j == 0 || j == gameMechs->getBoardSizeX() - 1) {
                 MacUILib_printf("%c", '#');
             } 
-            //check if we are at the players position
-            else if (i == playerPos.pos->y && j == playerPos.pos->x) {
-                MacUILib_printf("%c", playerPos.symbol); //print player char
-            } 
 
-            else
-            {
-                int itemFound = 0;
-                int k;
-                for (k = 0; k < 5; k++)
+            else{
+            int partExists =0;
+            int itemFound = 0;
+            //loop through all snake parts to see if any should be placed at (i,j)
+                for(int k = 0; k < playerPos->getSize(); k++)
                 {
-                    if (i == itemBin[k].pos->y && j == itemBin[k].pos->x)
-                    {
-                        MacUILib_printf("%c", itemBin[k].symbol); // Item symbol
-                        itemFound = 1;
+                    objPos currentPart = playerPos->getElement(k); //current body part
+                    if(i == currentPart.pos->y && j==currentPart.pos->x)
+                        {
+                        MacUILib_printf("%c",currentPart.getSymbol());
+                        partExists =1;
                         break;
+                        }
+                }
+                
+
+                if (partExists==0)
+                {
+                    for (int k = 0; k < 5; k++)
+                    {
+                        if (i == itemBin[k].pos->y && j == itemBin[k].pos->x)
+                        {
+                            MacUILib_printf("%c", itemBin[k].symbol); // Item symbol
+                            itemFound = 1;
+                            break;
+                        }
                     }
                 }
-                if (itemFound == 0)
+            
+
+                if (itemFound == 0 && partExists == 0)
                 {
                     MacUILib_printf(" ");
                 }
             }
+            
         }
         MacUILib_printf("\n");
     }
@@ -169,7 +184,7 @@ void CleanUp(void)
 void GenerateItems(objPos* itemBin, const int listSize, const int xRange, const int yRange)
 {
 
-    objPos playerPos = player->getPlayerPos();
+    objPosArrayList* playerPos = player->getPlayerPos();
 
     int usedCharacters[5];
     for (int k = 0; k < 5; k++) {
@@ -198,9 +213,15 @@ void GenerateItems(objPos* itemBin, const int listSize, const int xRange, const 
             x = (rand() % (xRange - 2)) + 1; 
             y = (rand() % (yRange - 2)) + 1; 
 
+            //loop through all snake parts to see if any should be placed at (i,j)
             //check and skip if overlap
-            if (x == playerPos.pos->x && y == playerPos.pos->y) {
-                continue; 
+            for(int k = 0; k < playerPos->getSize(); k++)
+            {
+                objPos currentPart = playerPos->getElement(k); //current body part
+                if(x == currentPart.pos->x && y==currentPart.pos->y)
+                {
+                    continue;
+                }
             }
 
             //check if theres already an item 
