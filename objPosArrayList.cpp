@@ -5,23 +5,75 @@
 // Paste your Tested implementation here.
 // Paste your Tested implementation here.
 
-
-
-
-
-int objPosArrayList::getSize() const 
+//constructor
+objPosArrayList::objPosArrayList()
 {
-    return size;
+    listSize = 1;
+    arrayCapacity = ARRAY_MAX_CAP;
+    aList = new objPos[arrayCapacity];
 }
 
-objPos objPosArrayList::getElement(int index) const 
+//deconstructor
+objPosArrayList::~objPosArrayList()
 {
-    if (index < 0 || index >= static_cast<int>(elements.size())) {
-        throw std::out_of_range("Index out of range");
+    delete[] aList;
+}
+
+//getSize
+int objPosArrayList::getSize() const
+{
+    return listSize;
+}
+
+//assign thisPos to first element of aList
+void objPosArrayList::insertHead(objPos thisPos)
+{
+    //shift elements 
+    int i;
+    for (i = listSize; i > 0; i--)
+    {
+        aList[i] = aList[i - 1];
     }
-    return elements[index];
+
+    //assign to first
+    aList[0] = thisPos;
+    listSize++;
 }
 
-// void objPosArrayList::addElement(const objPos& obj) {
-//     elements.push_back(obj); // Add an element to the list
-// }
+//add thisPos to end of te list 
+void objPosArrayList::insertTail(objPos thisPos)
+{
+    aList[listSize] = thisPos;
+    listSize++;
+}
+
+//
+void objPosArrayList::removeHead()
+{
+    for(int i = 0; i < listSize - 1; i++)
+    {
+        aList[i] = aList[i + 1];
+    }
+    listSize--;
+}
+
+void objPosArrayList::removeTail()
+{
+    listSize--;
+}
+
+objPos objPosArrayList::getHeadElement() const
+{
+    return aList[0];
+}
+
+objPos objPosArrayList::getTailElement() const
+{
+    return aList[listSize - 1];
+}
+
+objPos objPosArrayList::getElement(int index) const
+{
+    return aList[index];
+}
+
