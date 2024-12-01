@@ -10,9 +10,6 @@ using namespace std;
 #define DELAY_CONST 100000
 
 bool exitFlag;
-const int width = 30;
-const int height = 15; 
-const int num_obj = 5; 
 
 void Initialize(void);
 void GetInput(void);
@@ -53,7 +50,7 @@ void Initialize(void)
     MacUILib_init();
     MacUILib_clearScreen();
 
-    gameMechs = new GameMechs(width, height);
+    gameMechs = new GameMechs(30, 15);
     player = new Player(gameMechs);
 
     for (int j = 0; j < 5; j++) {
@@ -80,6 +77,10 @@ void RunLogic(void)
     player->updatePlayerDir();
     player->movePlayer();
     input = '\0';
+    if(gameMechs->getExitFlagStatus())
+    {
+        exitFlag = true;
+    }
     
 }
 
@@ -124,6 +125,7 @@ void DrawScreen(void)
                 {
                     MacUILib_printf(" ");
                 }
+            
             }
         }
         MacUILib_printf("\n");

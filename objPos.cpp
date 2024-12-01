@@ -22,6 +22,7 @@ objPos::objPos(int xPos, int yPos, char sym)
 //destructor
 objPos::~objPos() {
     delete pos;
+    pos = nullptr;
 }
 
 //copy Constructor

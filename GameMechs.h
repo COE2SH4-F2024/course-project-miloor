@@ -21,6 +21,9 @@ class GameMechs
         int boardSizeY;
 
         objPos food;
+        objPos regularFoods[2];  
+        objPos specialFood;      
+        bool specialFoodActive;  
 
     public:
         GameMechs();
@@ -43,6 +46,15 @@ class GameMechs
         void incrementScore();
         
         // More methods should be added here
+
+        void generateFood(const objPosArrayList& snakeBody);
+        objPos getFoodPos() const;
+
+        void generateFoods(const objPosArrayList& snakeBody); 
+        objPos getRegularFood(int index) const;              
+        objPos getSpecialFood() const;                       
+        bool isSpecialFoodActive() const;                    
+        void setSpecialFoodActive(bool isActive);
 };
 
 #endif
