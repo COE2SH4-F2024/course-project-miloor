@@ -39,7 +39,7 @@ objPos& objPos::operator=(const objPos& other) {
     if (this == &other)
         return *this;
 
-    delete pos;
+    delete pos; //delete previous 
 
     //copy data
     pos = new Pos;

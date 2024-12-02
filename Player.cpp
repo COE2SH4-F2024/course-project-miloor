@@ -18,6 +18,7 @@ Player::~Player()
 {
     // delete any heap members here
     delete playerPosList;
+    playerPosList = nullptr;
 }
 
 objPosArrayList* Player::getPlayerPos() const
@@ -61,6 +62,7 @@ void Player::updatePlayerDir()
             break;
         case ' ': 
             myDir = STOP;
+            mainGameMechsRef->setExitTrue();
             break;
         default:
             break;
@@ -89,6 +91,9 @@ void Player::movePlayer()
 {
     objPos headPos = playerPosList->getHeadElement(); //position of head
     objPos foodPos = mainGameMechsRef -> getFoodPos(); //posiion of food 
+    objPos specialFood = mainGameMechsRef -> getSpecialFood(); //posiion of special food 
+    bool regFoodAte =false;
+
     
     char input = mainGameMechsRef->getInput();
     if(input!='\0'){
@@ -112,11 +117,10 @@ void Player::movePlayer()
     else if(myDir== STOP)
     {
         mainGameMechsRef->setExitTrue();
-        return;
     }
     }
 
-
+    
     //border wraparound
     if (headPos.pos->y == mainGameMechsRef->getBoardSizeY()-1)
     {
@@ -144,19 +148,36 @@ void Player::movePlayer()
         mainGameMechsRef->setExitTrue();
     }
 
-    //food ATEE 
-    if (foodPos.pos -> x == headPos.pos -> x && foodPos.pos -> y == headPos.pos -> y)
+    //check if reg food ate
+    for (int k = 0; k < 2; k++)
     {
-        mainGameMechsRef -> generateFood(*playerPosList);
-        mainGameMechsRef -> incrementScore();
+        objPos regularFood = mainGameMechsRef -> getRegularFood(k); //posiion of special food 
+        if (regularFood.pos -> x == headPos.pos -> x && regularFood.pos -> y == headPos.pos -> y)
+        {
+            mainGameMechsRef -> generateFoods(*playerPosList);
+            mainGameMechsRef -> incrementScore();
+            regFoodAte = true;
+        }
+
     }
 
-    else
+    if (regFoodAte ==false)
     {
         playerPosList->removeTail();
     }
 
-    
+    //special food ATEE 
+    if (specialFood.pos -> x == headPos.pos -> x && specialFood.pos -> y == headPos.pos -> y)
+    {
+        
+        mainGameMechsRef -> generateFoods(*playerPosList);
+        mainGameMechsRef -> incrementSpecialScore();
+        if (playerPosList->getSize() > 1)
+        {
+        playerPosList->removeTail();
+        }
+    }
+ 
 }
 
 // More methods to be added

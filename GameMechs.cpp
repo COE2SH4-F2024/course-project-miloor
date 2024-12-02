@@ -20,7 +20,7 @@ GameMechs::GameMechs(int boardX, int boardY)
     loseFlag = false;
     score = 0;
     input = 0;
-    //specialFoodActive = false;
+    specialFoodActive = true;
 
 }
 
@@ -60,7 +60,11 @@ void GameMechs::generateFood(const objPosArrayList& snakeBody) {
 }
 
 void GameMechs::generateFoods(const objPosArrayList& snakeBody) {
-    srand(time(0)); //seed random number generator
+    static bool seeded = false; //ensures its seeded only once
+    if (!seeded) {
+        srand(time(0));
+        seeded = true;
+    }
     int newXval;
     int newYval;
     bool isValid;
@@ -94,7 +98,7 @@ void GameMechs::generateFoods(const objPosArrayList& snakeBody) {
     }
 
     //generate special food
-    if (!specialFoodActive) {
+    if (specialFoodActive) {
         do {
             isValid = true;
             newXval = rand() % (boardSizeX - 2) + 1;
@@ -110,7 +114,7 @@ void GameMechs::generateFoods(const objPosArrayList& snakeBody) {
             }
 
             //ensure no overlap with regular foods
-            for (int j = 0; j < 2; ++j) {
+            for (int j = 0; j < 1; ++j) {
                 if (regularFoods[j].pos->x == newXval && regularFoods[j].pos->y == newYval) {
                     isValid = false;
                     break;
@@ -125,7 +129,12 @@ void GameMechs::generateFoods(const objPosArrayList& snakeBody) {
 
 objPos GameMechs::getSpecialFood() const
 {
-    return objPos();
+    return specialFood;
+}
+
+objPos GameMechs::getRegularFood(int index) const
+{
+    return regularFoods[index];
 }
 
 objPos GameMechs::getFoodPos() const
@@ -157,7 +166,11 @@ int GameMechs::getScore() const
 void GameMechs::incrementScore()
 {
     score += 1;
-    // implement change for bonus
+}
+
+void GameMechs::incrementSpecialScore()
+{
+    score += 10;
 }
 
 int GameMechs::getBoardSizeX() const

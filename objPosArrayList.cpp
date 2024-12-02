@@ -55,11 +55,14 @@ void objPosArrayList::removeHead()
         aList[i] = aList[i + 1];
     }
     listSize--;
+    //delete &aList[0];
+
 }
 
 void objPosArrayList::removeTail()
 {
     listSize--;
+    //delete &aList[listSize - 1];
 }
 
 objPos objPosArrayList::getHeadElement() const

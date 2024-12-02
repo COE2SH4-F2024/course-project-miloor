@@ -44,6 +44,7 @@ class GameMechs
         
         int getScore() const;
         void incrementScore();
+        void incrementSpecialScore();
         
         // More methods should be added here
 

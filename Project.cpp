@@ -47,7 +47,7 @@ void Initialize(void)
     gameMechs = new GameMechs(30, 15);
 
     player = new Player(gameMechs);
-    gameMechs -> generateFood(*(player -> getPlayerPos()));
+    gameMechs -> generateFoods(*(player -> getPlayerPos()));
 
     exitFlag = false;
 }
@@ -56,7 +56,7 @@ void GetInput(void)
 {
     if(MacUILib_hasChar()==1)
     {
-        char input = MacUILib_getChar();
+        input = MacUILib_getChar();
         gameMechs->setInput(input);
     } 
 }
@@ -82,8 +82,7 @@ void DrawScreen(void)
 
     objPosArrayList* playerPos = player->getPlayerPos();
     objPos foodPos = gameMechs -> getFoodPos();
-    //MacUILib_printf("Player Pos: (%d, %d) Symbol: %c\n", playerPos.pos->x, playerPos.pos->y, playerPos.symbol);
-    //MacUILib_printf("\n");
+    objPos specialFood = gameMechs -> getSpecialFood();
 
     //loop through each row
     for (i = 0; i < gameMechs->getBoardSizeY(); i++) {
@@ -108,23 +107,33 @@ void DrawScreen(void)
                         {
                         MacUILib_printf("%c",currentPart.getSymbol());
                         partExists =1;
-                        break;
                         }
                 }
-                
 
                 if (partExists==0)
                 {
+                    //generate regular foods 
+                    for (int n = 0; n < 2; n++)
+                    {
+                        objPos regularFood = gameMechs -> getRegularFood(n);
+                        if (i == regularFood.pos->y && j == regularFood.pos->x)
+                        {
+                            MacUILib_printf("%c", regularFood.symbol);
+                            foodPlaced = 1;
+                        }
 
-                if (i == foodPos.pos->y && j == foodPos.pos->x)
-                {
-                    MacUILib_printf("%c", foodPos.symbol); //food symbol
-                    foodPlaced = 1;
-                }
+                    }
+
+                    //generate special food if exists 
+                    if (i == specialFood.pos->y && j == specialFood.pos->x)
+                        {
+                            MacUILib_printf("%c", specialFood.symbol);
+                            foodPlaced = 1;
+                        }
+                
                 }
                 
-            
-                if (foodPlaced == 0 && partExists == 0)
+                if (!foodPlaced && !partExists)
                 {
                     MacUILib_printf(" ");
                 }
@@ -135,6 +144,7 @@ void DrawScreen(void)
         MacUILib_printf("\n");
     }
 
+    MacUILib_printf("Controls\nw - move up\na - move left\ns- move down\nd - move right\nCurrent score: %d", gameMechs->getScore());
 }
 
 void LoopDelay(void)
@@ -154,17 +164,10 @@ void CleanUp(void)
         MacUILib_printf("Your score is: %d\n", gameMechs->getScore());
     }
 
-    if (gameMechs)
-    {
-        delete gameMechs;
-        gameMechs = nullptr;
-    }
-
-    if (player) 
-    {
-        delete player;
-        player = nullptr; 
-    }
+    delete gameMechs;
+    gameMechs = nullptr;
+    delete player;
+    player = nullptr; 
 
     MacUILib_uninit();
 }
