@@ -1,4 +1,6 @@
 #include "objPosArrayList.h"
+#include <stdexcept>
+#include <_printf.h>
 
 // Paste your Tested implementation here.
 // Paste your Tested implementation here.
@@ -7,7 +9,7 @@
 //constructor
 objPosArrayList::objPosArrayList()
 {
-    listSize = 0;
+    listSize = 1;
     arrayCapacity = ARRAY_MAX_CAP;
     aList = new objPos[arrayCapacity];
 }
@@ -63,6 +65,7 @@ void objPosArrayList::removeTail()
 
 objPos objPosArrayList::getHeadElement() const
 {
+
     return aList[0];
 }
 
@@ -73,6 +76,10 @@ objPos objPosArrayList::getTailElement() const
 
 objPos objPosArrayList::getElement(int index) const
 {
+   // if (index < 0 || index >= static_cast<int>(aList.getSize()))
+   // {
+   //     throw std::out_of_range("index out of range");
+   // }
     return aList[index];
 }
 

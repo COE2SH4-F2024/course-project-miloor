@@ -1,11 +1,14 @@
 #include "GameMechs.h"
 #include "MacUILib.h"
+#include <iostream>
+
 
 GameMechs::GameMechs()
 {
     input = 0;
     boardSizeX = 30;
     boardSizeY = 15;
+    food.setObjPos(-5,-5,'+');
 }
 
 GameMechs::GameMechs(int boardX, int boardY)
@@ -26,7 +29,12 @@ GameMechs::~GameMechs() {
 }
 
 void GameMechs::generateFood(const objPosArrayList& snakeBody) {
-    srand(time(0)); // Seed random number generator
+    static bool seeded = false; //ensures its seeded only once
+    if (!seeded) {
+        srand(time(0));
+        seeded = true;
+    }
+
     int newXval;
     int newYval;
     bool isValid = false;
@@ -48,12 +56,11 @@ void GameMechs::generateFood(const objPosArrayList& snakeBody) {
     }
 
     // Set the new food position
-    food.setObjPos(newXval, newYval, '@');
-
+    food.setObjPos(newXval, newYval, '+');
 }
 
 void GameMechs::generateFoods(const objPosArrayList& snakeBody) {
-    srand(time(0)); // Seed random number generator
+    srand(time(0)); //seed random number generator
     int newXval;
     int newYval;
     bool isValid;
@@ -74,7 +81,7 @@ void GameMechs::generateFoods(const objPosArrayList& snakeBody) {
                 }
             }
 
-            // Ensure no overlap with previously placed foods
+            //ensure no overlap with previously placed foods
             for (int j = 0; j < i; ++j) {
                 if (regularFoods[j].pos->x == newXval && regularFoods[j].pos->y == newYval) {
                     isValid = false;
@@ -86,14 +93,14 @@ void GameMechs::generateFoods(const objPosArrayList& snakeBody) {
         regularFoods[i].setObjPos(newXval, newYval, '+'); // symbol for regular food
     }
 
-    // Generate special food
+    //generate special food
     if (!specialFoodActive) {
         do {
             isValid = true;
             newXval = rand() % (boardSizeX - 2) + 1;
             newYval = rand() % (boardSizeY - 2) + 1;
 
-            // Check overlap with snake
+            //check overlap with snake
             for (int j = 0; j < snakeBody.getSize(); ++j) {
                 if (snakeBody.getElement(j).pos->x == newXval &&
                     snakeBody.getElement(j).pos->y == newYval) {
@@ -102,7 +109,7 @@ void GameMechs::generateFoods(const objPosArrayList& snakeBody) {
                 }
             }
 
-            // Ensure no overlap with regular foods
+            //ensure no overlap with regular foods
             for (int j = 0; j < 2; ++j) {
                 if (regularFoods[j].pos->x == newXval && regularFoods[j].pos->y == newYval) {
                     isValid = false;
@@ -111,7 +118,7 @@ void GameMechs::generateFoods(const objPosArrayList& snakeBody) {
             }
         } while (!isValid);
 
-        specialFood.setObjPos(newXval, newYval, '$'); // Special food symbol
+        specialFood.setObjPos(newXval, newYval, '$'); //special food symbol
         specialFoodActive = true;
     }
 }

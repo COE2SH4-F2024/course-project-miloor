@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "MacUILib.h"
+#include <iostream>
 
 
 
@@ -7,7 +8,6 @@ Player::Player(GameMechs* thisGMRef)
 {
     mainGameMechsRef = thisGMRef;
     myDir = STOP;
-    //playerPos.setObjPos(mainGameMechsRef->getBoardSizeX()/2, mainGameMechsRef->getBoardSizeY()/2, '*');
     playerPosList = new objPosArrayList();
     playerPosList->insertHead(objPos(mainGameMechsRef->getBoardSizeX()/2,mainGameMechsRef->getBoardSizeY()/2,'*'));
 
@@ -19,13 +19,6 @@ Player::~Player()
     // delete any heap members here
     delete playerPosList;
 }
-
-// objPos Player::getPlayerPos() const
-// {
-//     // return the reference to the playerPos arrray list
-//     //return playerPos;
-//     return playerPosList->getHeadElement();
-// }
 
 objPosArrayList* Player::getPlayerPos() const
 {
@@ -75,11 +68,30 @@ void Player::updatePlayerDir()
     } 
 }
 
+bool Player::checkSelfCollision(){
+
+    bool result = false;
+    objPos headPos = playerPosList->getHeadElement(); //position of head
+
+    for (int i = 1; i < playerPosList->getSize()-1; i++)
+    {
+        objPos currentPart = playerPosList->getElement(i);
+        if (headPos.pos -> x == currentPart.pos->x && headPos.pos -> y == currentPart.pos->y)
+        {
+            result = true;
+        }
+    }
+
+    return result;
+}
+
 void Player::movePlayer()
 {
     objPos headPos = playerPosList->getHeadElement(); //position of head
+    objPos foodPos = mainGameMechsRef -> getFoodPos(); //posiion of food 
     
-
+    char input = mainGameMechsRef->getInput();
+    if(input!='\0'){
     //change player position
     if (myDir == UP)
     {
@@ -97,6 +109,13 @@ void Player::movePlayer()
     {
         headPos.pos->x--;
     }
+    else if(myDir== STOP)
+    {
+        mainGameMechsRef->setExitTrue();
+        return;
+    }
+    }
+
 
     //border wraparound
     if (headPos.pos->y == mainGameMechsRef->getBoardSizeY()-1)
@@ -116,8 +135,28 @@ void Player::movePlayer()
         headPos.pos->x = mainGameMechsRef->getBoardSizeX()-1;
     }
 
-    playerPosList->insertHead(headPos);
-    playerPosList->removeTail();
+     playerPosList->insertHead(headPos);
+
+    //check for collision
+    if (checkSelfCollision()==true)
+    {
+        mainGameMechsRef->setLoseFlag();
+        mainGameMechsRef->setExitTrue();
+    }
+
+    //food ATEE 
+    if (foodPos.pos -> x == headPos.pos -> x && foodPos.pos -> y == headPos.pos -> y)
+    {
+        mainGameMechsRef -> generateFood(*playerPosList);
+        mainGameMechsRef -> incrementScore();
+    }
+
+    else
+    {
+        playerPosList->removeTail();
+    }
+
+    
 }
 
 // More methods to be added

@@ -6,7 +6,6 @@
 #include "time.h"
 
 using namespace std;
-
 #define DELAY_CONST 100000
 
 bool exitFlag;
@@ -18,14 +17,9 @@ void DrawScreen(void);
 void LoopDelay(void);
 void CleanUp(void);
 
-void GenerateItems(objPos* itemBin, const int listSize, const int xRange, const int yRange);
-
-
 Player* player;
 char input; //user input
 GameMechs* gameMechs = new GameMechs();
-
-objPos itemBin[5];
 
 int main(void)
 {
@@ -51,15 +45,10 @@ void Initialize(void)
     MacUILib_clearScreen();
 
     gameMechs = new GameMechs(30, 15);
+
     player = new Player(gameMechs);
+    gameMechs -> generateFood(*(player -> getPlayerPos()));
 
-    for (int j = 0; j < 5; j++) {
-        itemBin[j].pos->x = j - 50;
-        itemBin[j].pos->y = j - 50;
-        itemBin[j].symbol = 'A' + j;
-    }
-
-    GenerateItems(itemBin, 5, gameMechs->getBoardSizeX(), gameMechs->getBoardSizeY()); 
     exitFlag = false;
 }
 
@@ -92,22 +81,25 @@ void DrawScreen(void)
     int i,j;
 
     objPosArrayList* playerPos = player->getPlayerPos();
+    objPos foodPos = gameMechs -> getFoodPos();
     //MacUILib_printf("Player Pos: (%d, %d) Symbol: %c\n", playerPos.pos->x, playerPos.pos->y, playerPos.symbol);
     //MacUILib_printf("\n");
 
-
     //loop through each row
     for (i = 0; i < gameMechs->getBoardSizeY(); i++) {
+
         //loop through each column
         for (j = 0; j < gameMechs->getBoardSizeX(); j++) {
+
             //check if we are at the border
-            if (i == 0 || i == gameMechs->getBoardSizeY() - 1 || j == 0 || j == gameMechs->getBoardSizeX() - 1) {
+            if (i == 0 || i == gameMechs->getBoardSizeY() -1|| j == 0 || j == gameMechs->getBoardSizeX()-1) {
                 MacUILib_printf("%c", '#');
             } 
 
             else{
             int partExists =0;
-            int itemFound = 0;
+            int foodPlaced = 0;
+
             //loop through all snake parts to see if any should be placed at (i,j)
                 for(int k = 0; k < playerPos->getSize(); k++)
                 {
@@ -123,19 +115,16 @@ void DrawScreen(void)
 
                 if (partExists==0)
                 {
-                    for (int k = 0; k < 5; k++)
-                    {
-                        if (i == itemBin[k].pos->y && j == itemBin[k].pos->x)
-                        {
-                            MacUILib_printf("%c", itemBin[k].symbol); // Item symbol
-                            itemFound = 1;
-                            break;
-                        }
-                    }
-                }
-            
 
-                if (itemFound == 0 && partExists == 0)
+                if (i == foodPos.pos->y && j == foodPos.pos->x)
+                {
+                    MacUILib_printf("%c", foodPos.symbol); //food symbol
+                    foodPlaced = 1;
+                }
+                }
+                
+            
+                if (foodPlaced == 0 && partExists == 0)
                 {
                     MacUILib_printf(" ");
                 }
@@ -158,11 +147,11 @@ void CleanUp(void)
 {
     MacUILib_clearScreen();   
 
-    if (gameMechs->getLoseFlagStatus())
+    if (gameMechs->getLoseFlagStatus()==true)
     {
-        MacUILib_printf("You lost! Try again!");
+        MacUILib_printf("You lost! Try again! Your score is: %d\n", gameMechs->getScore());
     } else {
-        MacUILib_printf("You tried! Your score is: %d\n", gameMechs->getScore());
+        MacUILib_printf("Your score is: %d\n", gameMechs->getScore());
     }
 
     if (gameMechs)
@@ -178,74 +167,4 @@ void CleanUp(void)
     }
 
     MacUILib_uninit();
-}
-
-
-// The Item Generation Routine
-////////////////////////////////////
-void GenerateItems(objPos* itemBin, const int listSize, const int xRange, const int yRange)
-{
-
-    objPosArrayList* playerPos = player->getPlayerPos();
-
-    int usedCharacters[5];
-    for (int k = 0; k < 5; k++) {
-        usedCharacters[k] = 0; //0 means not used
-    }
-
-    srand(time(NULL)); // rand number generator
-    int count = 0;
-
-    for (int i = 0; i < listSize; i++) {
-        int x, y;
-        int validPosition = 0;  
-
-        char chosenChar;
-        int charIndex;
-
-        do {
-            charIndex = (rand() % (126 - 33 + 1)) +33;
-        } while (usedCharacters[charIndex]==1 || charIndex == 64 || charIndex == 35);
-
-        //mark this character index as used
-        itemBin[i].symbol = (char)charIndex;
-        
-        while (!validPosition) {
-            //generate between 1 and range-1
-            x = (rand() % (xRange - 2)) + 1; 
-            y = (rand() % (yRange - 2)) + 1; 
-
-            //loop through all snake parts to see if any should be placed at (i,j)
-            //check and skip if overlap
-            for(int k = 0; k < playerPos->getSize(); k++)
-            {
-                objPos currentPart = playerPos->getElement(k); //current body part
-                if(x == currentPart.pos->x && y==currentPart.pos->y)
-                {
-                    continue;
-                }
-            }
-
-            //check if theres already an item 
-            int positionOccupied = 0;
-            for (int j = 0; j < i; j++) {
-                if (itemBin[j].pos->x == x && itemBin[j].pos->y == y) {
-                    positionOccupied = 1;
-                    break;
-                }
-            }
-
-            //skip if occupied
-            if (positionOccupied) {
-                continue; 
-            }
-
-            //if no conflicts
-            itemBin[i].pos->x = x;
-            itemBin[i].pos->y = y;
-            
-            validPosition = 1;
-        }
-    }
-
 }
